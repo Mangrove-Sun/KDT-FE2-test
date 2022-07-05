@@ -6,6 +6,7 @@ const db = admin.firestore()
 const router = express.Router()
 
 interface Todo {
+  id?: string
   title: string
   done: boolean
   createdAt: string
@@ -26,8 +27,7 @@ router.get('/', async (req, res) => {
     .get()
 
     // 처리
-    type RespnseTodo = Todo & { id: string }
-    const todos: RespnseTodo[] = []
+    const todos: Todo[] = []
     snaps.forEach(snap => {
       const fields = snap.data()
       todos.push({
@@ -56,7 +56,30 @@ router.post('/', async (req, res) => {
     ...todo
   })
 })
-// router.put('')
+// 투두 수정
+router.put('/:id', async (req, res) => {
+  const {title, done } = req.body
+  const { id } = req.params
+
+  const snap = await db.collection('Todos').doc(id).get()
+  const { createdAt } = snap.data() as Todo
+  const updatedAt = new Date().toISOString()
+  await snap.ref.update({
+    title,
+    done,
+    updatedAt
+  })
+
+
+
+  res.status(200).json({
+    id: snap.id,
+    title,
+    done,
+    createdAt,
+    updatedAt
+  })
+})
 // router.delete('')
 
 export default router
