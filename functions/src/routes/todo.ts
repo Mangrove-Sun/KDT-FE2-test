@@ -47,16 +47,17 @@ router.get('/', async (req, res) => {
     .where('deleted', '!=', true)
     .get()
 
-    // 처리
-    const todos: Todo[] = []
-    snaps.forEach(snap => {
-      const fields = snap.data()
-      todos.push({
-        id: snap.id,
-        ...fields as Todo
-      })
+  // 처리
+  const todos: Todo[] = []
+  snaps.forEach(snap => {
+    const fields = snap.data()
+    todos.push({
+      id: snap.id,
+      ...fields as Todo
     })
-    
+  })
+
+  // sort 정렬 (최신순)
   todos.sort((a, b) => {
     const aTime = new Date(a.createdAt).getTime()
     const bTime = new Date(b.createdAt).getTime()
