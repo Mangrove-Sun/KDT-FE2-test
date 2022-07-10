@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin'
 import * as express from 'express'
+import { saveFile } from '../utils'
 
 // firestore라는 db이다
 const db = admin.firestore()
@@ -8,30 +9,11 @@ const router = express.Router()
 interface Todo {
   id?: string
   title: string
+  image?: string | null
   done: boolean
   createdAt: string
   updatedAt: string
   deleted: boolean
-}
-
-// Job
-async function addEdeleted() {
-  const snaps = await db.collection('Todos').get()
-
-  // forEach메소드 자체가 비동기처럼 기다렸다가 넘어가지 않는다.
-  // forEach에서는 async, await가 되지 않는다.
-  // snaps.forEach(async snap => {
-  //   await snap.ref.update({
-  //     deleted: false
-  //   })
-  // })
-  // 기다렸다 넘어가게 만들기 위해 for문을 사용한다.
-  for (const snap of snaps.docs) {
-    snap.ref.update({
-      deleted: false
-    })
-  }
-  console.log('완료!')
 }
 
 // http://localhost:5001/kdt-fe2-test/us-central1/api/todo
@@ -69,10 +51,15 @@ router.get('/', async (req, res) => {
 
 // 투두 추가
 router.post('/', async (req, res) => {
-  const { title } = req.body
+  const { title, imageBase64 } = req.body
   const date = new Date().toISOString()
+
+  // 스토리지에 파일 저장
+  const image = await saveFile(imageBase64)
+  
   const todo: Todo = {
     title,
+    image,
     done: false,
     createdAt: date,
     updatedAt: date,
@@ -87,7 +74,7 @@ router.post('/', async (req, res) => {
 })
 // 투두 수정
 router.put('/:id', async (req, res) => {
-  const {title, done } = req.body
+  const {title, done, imageBase64 } = req.body
   const { id } = req.params
 
   const snap = await db.collection('Todos').doc(id).get()
@@ -95,11 +82,16 @@ router.put('/:id', async (req, res) => {
   if (!snap.exists) {
     return res.status(404).json('존재하지 않는 정보입니다.')
   }
+
+  // 스토리지에 파일 저장
+  const image = await saveFile(imageBase64)
+
   const { createdAt } = snap.data() as Todo
   const updatedAt = new Date().toISOString()
   await snap.ref.update({
     title,
     done,
+    image,
     updatedAt
   })
 
@@ -107,6 +99,7 @@ router.put('/:id', async (req, res) => {
     id: snap.id,
     title,
     done,
+    image,
     createdAt,
     updatedAt,
     deleted: false
@@ -140,3 +133,6 @@ router.delete('/:id', async (req, res) => {
 })
 
 export default router
+
+function abc() {return 123}
+const a = function () { return 123  }

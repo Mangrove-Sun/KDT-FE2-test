@@ -1,21 +1,38 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <input
+    type="file"
+    @change="selectFile" />
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<script lang="ts">
+import axios from 'axios'
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  methods: {
+    selectFile(event: Event) {
+      // html 요소는 언제든지 null일 수 있으므로 타입단언을 해주어야 한다.
+      const files = (event.target as HTMLInputElement).files as FileList
+      for (let i = 0; i < files.length; i += 1) {
+        const file = files[i]
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.addEventListener('load', async e => {
+          // console.log((e.target as FileReader).result)
+          const { data } = await axios({
+            url: 'http://localhost:5001/kdt-fe2-test/us-central1/api/todo',
+            method: 'POST',
+            data: {
+              title: '파일 추가!',
+              imageBase64: (e.target as FileReader).result
+            }
+          })
+          console.log('투두 생성 응답:', data)
+        })
+      }
+    }
+  }
+})
+
+
+</script>
