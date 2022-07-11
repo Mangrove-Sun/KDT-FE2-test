@@ -84,7 +84,12 @@ router.put('/:id', async (req, res) => {
   }
 
   // 스토리지에 파일 저장
-  const image = await saveFile(imageBase64)
+  let image = ''
+  try {
+    image = await saveFile(imageBase64)
+  } catch (error) {
+    console.log(error)
+  }
 
   const { createdAt } = snap.data() as Todo
   const updatedAt = new Date().toISOString()
@@ -133,6 +138,3 @@ router.delete('/:id', async (req, res) => {
 })
 
 export default router
-
-function abc() {return 123}
-const a = function () { return 123  }
